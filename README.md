@@ -7,11 +7,11 @@
 Additional Features to SCSS
 ---------------------------
 
-- [php imbrication](http://wildsurikat.com/Documentation/Stylize#php-imbrication)
-- [hybride PHP Mixin](http://wildsurikat.com/Documentation/Stylize#php-mixin)
-- [mixin autoload (include)](http://wildsurikat.com/Documentation/Stylize#autoload-mixin)
-- [extend autoload](http://wildsurikat.com/Documentation/Stylize#autoload-extend)
-- [font autoload](http://wildsurikat.com/Documentation/Stylize#autoload-font)
+- [php imbrication](http://wildsurikat.com/stylize#php-imbrication)
+- [hybride PHP Mixin](http://wildsurikat.com/stylize#php-mixin)
+- [mixin autoload (include)](http://wildsurikat.com/stylize#autoload-mixin)
+- [extend autoload](http://wildsurikat.com/stylize#autoload-extend)
+- [font autoload](http://wildsurikat.com/stylize#autoload-font)
 
 Basic Usage
 -----------
@@ -67,7 +67,7 @@ $img-path: '<?=$img_path?>' !default;
  The hybride PHP mixins allow you to get your parameters passed to *include* as php variables in *mixin* declaration and using a different syntax for *include* parameters.  
  The syntax of hybride php mixins parameters is simple: the separator is the comma "*,*" and no quotes are required, all parameters will be automaticaly typed.  
  The difference in declaration is that you have to use a "*@?*" instead of "*@*" and same for *include*: "*@?mixin *" instead of "*@mixin *" and "*@?include *" instead of "*@include *".  
- Let's take an example of declaration (the grid from [Surikat SCSS Toolbox](http://wildsurikat.com/Documentation/CSS)): 
+ Let's take an example of declaration (the grid from [Surikat SCSS Toolbox](http://wildsurikat.com/css-toolbox)): 
 ```scss
 @import "include/grid.reset-star";  
 @?mixin grid{<?  
