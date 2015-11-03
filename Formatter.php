@@ -11,7 +11,7 @@
  */
 
 //namespace Leafo\ScssPhp;
-namespace Wild\Stylize;
+namespace RedCat\Stylize;
 
 /**
  * SCSS base formatter

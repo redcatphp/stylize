@@ -11,7 +11,7 @@
  */
 
 //namespace Leafo\ScssPhp;
-namespace Wild\Stylize;
+namespace RedCat\Stylize;
 
 //use Leafo\ScssPhp\Colors;
 //use Leafo\ScssPhp\Parser;
@@ -102,7 +102,7 @@ class Compiler
     protected $numberPrecision = 5;
 
     //protected $formatter = 'Leafo\ScssPhp\Formatter\Nested';
-    protected $formatter = 'Wild\Stylize\Formatter\Nested';
+    protected $formatter = 'RedCat\Stylize\Formatter\Nested';
 	
 	public $dev = true;//addon by surikat
 	

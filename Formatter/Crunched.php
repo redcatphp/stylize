@@ -11,9 +11,9 @@
  */
 
 //namespace Leafo\ScssPhp\Formatter;
-namespace Wild\Stylize\Formatter;
+namespace RedCat\Stylize\Formatter;
 
-use Wild\Stylize\Formatter;
+use RedCat\Stylize\Formatter;
 
 /**
  * SCSS crunched formatter

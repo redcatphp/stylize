@@ -9,7 +9,7 @@
 		{
 			"name": "Jo Surikat",
 			"email": "jo@surikat.pro",
-			"homepage": "http://wildsurikat.com/stylize",
+			"homepage": "http://redcatphp.com/stylize",
 			"role": "Developer"
 		}
 	],
@@ -18,7 +18,7 @@
 	},
 	"autoload": {
 		"psr-4":{
-			"Wild\\Stylize\\": ""
+			"RedCat\\Stylize\\": ""
 		}
 	},
 	"minimum-stability": "dev"
