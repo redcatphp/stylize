@@ -7,11 +7,11 @@
 Additional Features to SCSS
 ---------------------------
 
-- [php imbrication](http://wildsurikat.com/stylize#php-imbrication)
-- [hybride PHP Mixin](http://wildsurikat.com/stylize#php-mixin)
-- [mixin autoload (include)](http://wildsurikat.com/stylize#autoload-mixin)
-- [extend autoload](http://wildsurikat.com/stylize#autoload-extend)
-- [font autoload](http://wildsurikat.com/stylize#autoload-font)
+- [php imbrication](http://redcatphp.com/stylize#php-imbrication)
+- [hybride PHP Mixin](http://redcatphp.com/stylize#php-mixin)
+- [mixin autoload (include)](http://redcatphp.com/stylize#autoload-mixin)
+- [extend autoload](http://redcatphp.com/stylize#autoload-extend)
+- [font autoload](http://redcatphp.com/stylize#autoload-font)
 
 Basic Usage
 -----------
@@ -20,9 +20,9 @@ Basic Usage
 
  
 ```php
-$scss = new \\Wild\\Stylize\\Compiler();  
+$scss = new \\RedCat\\Stylize\\Compiler();  
 $scss->setImportPaths(['css']);  
-$scss->addImportPath('surikat/css');  
+$scss->addImportPath('redcat/css');  
 $scss->compile(file_get_contents('css/style.scss'));  
             
 ```
@@ -32,8 +32,8 @@ $scss->compile(file_get_contents('css/style.scss'));
 
  The server will handle cache and rebuild it only if the files has changed and also deal in HTTP via Etag and Last-Modified. It also include by default, if they are present, "*_config.scss*" and "*_var.scss*". It will use a cache directory by default which is "*.tmp/stylish/*" from current working directory and which need to be writeable (chmod 0777). 
 ```php
-$server = new \\Wild\\Stylize\\Server();  
-$directories = ['css','surikat/css'];  
+$server = new \\RedCat\\Stylize\\Server();  
+$directories = ['css','redcat/css'];  
 $server->serveFrom('style.scss',$directories);  
             
 ```
@@ -67,7 +67,7 @@ $img-path: '<?=$img_path?>' !default;
  The hybride PHP mixins allow you to get your parameters passed to *include* as php variables in *mixin* declaration and using a different syntax for *include* parameters.  
  The syntax of hybride php mixins parameters is simple: the separator is the comma "*,*" and no quotes are required, all parameters will be automaticaly typed.  
  The difference in declaration is that you have to use a "*@?*" instead of "*@*" and same for *include*: "*@?mixin *" instead of "*@mixin *" and "*@?include *" instead of "*@include *".  
- Let's take an example of declaration (the grid from [Surikat SCSS Toolbox](http://wildsurikat.com/css-toolbox)): 
+ Let's take an example of declaration (the grid from [RedCat's SCSS Toolbox](http://redcatphp.com/css-toolbox)): 
 ```scss
 @import "include/grid.reset-star";  
 @?mixin grid{<?  
