@@ -4,12 +4,12 @@
 	"description": "Stylize - Css Preprocessor using Scss syntax ( SASS 3.2 ) ported to PHP with added supports: php imbrication, php mixin, mixin autoload, extend autoload, font autoload - derived from leafo-scssphp",
 	"keywords": ["Stylize","CSS","CSS Preprocessor","SCSS","SASS","Style","Stylesheet","mixin","font","autoload"],
 	"license": ["LGPL-3.0+","CC0-1.0"],
-	"homepage": "https://github.com/redcatphp/Stylize",
+	"homepage": "http://redcatphp.com/stylize-scss",
 	"authors": [
 		{
 			"name": "Jo Surikat",
 			"email": "jo@surikat.pro",
-			"homepage": "http://redcatphp.com/stylize-scss",
+			"homepage": "http://surikat.pro",
 			"role": "Developer"
 		}
 	],
