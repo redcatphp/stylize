@@ -1,10 +1,10 @@
 <?php
 namespace RedCat\Stylize;
 /*
- * Css Preprocessor using Scss syntax ( SASS 3.2 ) ported to PHP with added supports: php imbrication, php mixin, mixin autoload, extend autoload, font autoload - derived from leafo-scssphp
+ * Css Preprocessor using Scss syntax ( SASS 3.x ) ported to PHP with added supports: php imbrication, php mixin, mixin autoload, extend autoload, font autoload - derived from leafo-scssphp
  *
  * @package Stylize
- * @version 1.3
+ * @version 2
  * @link http://github.com/redcatphp/Stylize/
  * @author Jo Surikat <jo@surikat.pro>
  * @website http://redcatphp.com
@@ -14,6 +14,7 @@ class Server{
 	protected $enableCache;
 	protected $compiler;
 	protected $extraImports = [];
+	protected $importPaths = [];
 	function __construct($from=null,$cache=true){
 		$this->setCache($cache);
 		$this->compiler = new Compiler();
@@ -40,7 +41,7 @@ class Server{
 		if(strpos($in, '..')!==false)
 			return;
 		set_time_limit(0);
-		foreach($this->compiler->getImportPaths() as $dir){
+		foreach($this->importPaths as $dir){
 			$input = self::joinPath($dir, $in);
 			if(is_file($input)&&is_readable($input)){
 				$output = $this->cacheName($salt . $input);
@@ -103,7 +104,7 @@ class Server{
 		$v = Compiler::Scss_VERSION;
 		$v2 = Compiler::Stylize_VERSION;
 		$t = @date('r');
-		$css = "/* compiled by Stylize $v2 ( based on Leafo/ScssPhp $v - Sass 3.2 implementation in PHP ) on $t (${elapsed}s) */\n\n" . $css;
+		$css = "/* compiled by Stylize $v2 ( based on Leafo/ScssPhp $v - Sass 3.x implementation in PHP ) on $t (${elapsed}s) */\n\n" . $css;
 		if(!is_dir($this->cacheDir))
 			@mkdir($this->cacheDir,0777,true);
 		file_put_contents($out, $css, LOCK_EX);
@@ -138,6 +139,7 @@ class Server{
 		$this->compiler->addImportPath($dir);
 	}
 	function setImportPaths($dir){
+		$this->importPaths = (array)$dir;
 		$this->compiler->setImportPaths($dir);
 	}
 	function setCacheDir($dir){
