@@ -16,12 +16,12 @@
 	"repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/redcatphp/scssphp.git"
+            "url": "https://github.com/redcatphp/scssphp"
         }
     ],
     "require": {
 		"php": ">=5.4.0",
-		"leafo/scssphp": "dev-extends"
+		"leafo/scssphp": "dev-master"
     },
 	"autoload": {
 		"psr-4":{
