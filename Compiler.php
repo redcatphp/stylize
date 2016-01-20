@@ -1,5 +1,6 @@
 <?php
 namespace RedCat\Stylize;
+require_once __DIR__.'/CompilerFork.php';
 use Leafo\ScssPhp\Formatter\OutputBlock;
 use Leafo\ScssPhp\Type;
 use Leafo\ScssPhp\Node\Number;
