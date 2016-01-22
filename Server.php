@@ -82,7 +82,7 @@ class Server{
 		$icache = $this->importsCacheName($out);
 		if (is_readable($icache)) {
 			$imports = unserialize(file_get_contents($icache));
-			foreach ($imports as $import)
+			foreach ($imports as $import=>$mtime)
 				if (($mt=@filemtime($import)) > $mtime||!$mt) return true;
 		}
 		return false;
