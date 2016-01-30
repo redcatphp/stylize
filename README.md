@@ -1,7 +1,7 @@
  Stylize
 ========
 
- Stylize is a CSS Pre-processor using Scss syntax from [SASS](http://sass-lang.com) ( version 3.2 ) ported to PHP with additional features.  
+ Stylize is a CSS Pre-processor using Scss syntax from [SASS](http://sass-lang.com) ( version 3.x ) ported to PHP with additional features.  
  If you're not familiar with this language, you can consult the basic documentation on [SASS](https://en.wikipedia.org/wiki/Sass_%28stylesheet_language%29). I'll describe here only the PHP API and exclusive features of Stylize. The source code is derived from the excellent [leafo-scssphp](http://leafo.net/scssphp/).
 
 Additional Features to SCSS
