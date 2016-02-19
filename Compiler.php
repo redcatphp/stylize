@@ -8,6 +8,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
     const Stylize_VERSION = 'v2';
     const Scss_VERSION = 'v0.6.3';
 	
+	protected $importedDotScss = [];
+	
 	function parserFactory($path){
         $parser = new Parser($path, count($this->sourceNames), $this->encoding, $this);
 
@@ -263,8 +265,10 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 			while(!empty($x)){
 				$dir = implode('/',$x);
 				array_pop($x);
-				if(is_file($dir.'/.scss')){
-					$dotScss[] = $dir.'/.scss';
+				$f = $dir.'/.scss';
+				if(is_file($f)&&!in_array($f,$this->importedDotScss)){
+					$this->importedDotScss[] = $f;
+					$dotScss[] = $f;
 				}
 			}
 			if(!empty($dotScss)){
