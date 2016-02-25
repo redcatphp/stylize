@@ -15,7 +15,7 @@
 	],
     "require": {
 		"php": ">=5.4.0",
-		"leafo/scssphp": "^0.6.3"
+		"leafo/scssphp": "@dev"
     },
 	"autoload": {
 		"psr-4":{
