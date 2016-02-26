@@ -5,7 +5,7 @@ use Leafo\ScssPhp\Type;
 use Leafo\ScssPhp\Node\Number;
 class Compiler extends \Leafo\ScssPhp\Compiler{
     const Stylize_VERSION = 'v2';
-    const Scss_VERSION = 'v0.6.3';
+    const Scss_VERSION = 'v0.6.3@dev';
 	
 	protected $importedDotScss = [];
 	
@@ -153,7 +153,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 			foreach(array_keys($matches[0]) as $i){
 				if(strpos($matches[1][$i],'#{')!==false)
 					continue;
-				$code = "@import 'include/{$matches[1][$i]}';\r\n$code";
+				if($this->findImport('include/'.$matches[1][$i]))
+					$code = "@import 'include/{$matches[1][$i]}';\r\n$code";
 			}
 		}
 		preg_match_all('/@extend\\s+([^;]+)/s',$tmpCode,$matches);
@@ -162,7 +163,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				if(strpos($matches[1][$i],'#{')!==false)
 					continue;
 				$inc = ltrim(str_replace('%','-',$matches[1][$i]),'-');
-				$code = "@import 'extend/$inc';\r\n$code";
+				if($this->findImport('extend/'.$inc))
+					$code = "@import 'extend/$inc';\r\n$code";
 			}
 		}
 		return $code;
@@ -196,7 +198,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				$x = explode(',',$font);
 				foreach($x as $f){
 					$this->autoGenerateFont($f);
-					$code = "@import 'font/$f';\r\n$code";
+					if($this->findImport('font/'.$f))
+						$code = "@import 'font/$f';\r\n$code";
 				}
 				$tmpCode = substr($tmpCode,0,$pos=strpos($tmpCode,$matches[0][$i],$pos)).substr($tmpCode,$pos+1+strlen($matches[0][$i])); //strip
 			}
@@ -219,7 +222,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				$x = explode(',',$font);
 				foreach($x as $f){
 					$this->autoGenerateFont($f);
-					$code = "@import 'font/$f';\r\n$code";
+					if($this->findImport('font/'.$f))
+						$code = "@import 'font/$f';\r\n$code";
 				}
 			}
 		}
@@ -284,365 +288,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
         $this->compileChildrenNoReturn($tree->children, $out);
         array_shift($this->importPaths);
     }
-	protected function compileChild($child, OutputBlock $out)
-    {
-        $this->sourceIndex  = isset($child[Parser::SOURCE_INDEX]) ? $child[Parser::SOURCE_INDEX] : null;
-        $this->sourceLine   = isset($child[Parser::SOURCE_LINE]) ? $child[Parser::SOURCE_LINE] : -1;
-        $this->sourceColumn = isset($child[Parser::SOURCE_COLUMN]) ? $child[Parser::SOURCE_COLUMN] : -1;
-
-        switch ($child[0]) {
-            case Type::T_SCSSPHP_IMPORT_ONCE:
-                list(, $rawPath) = $child;
-
-                $rawPath = $this->reduce($rawPath);
-
-                //if (! $this->compileImport($rawPath, $out, true)) {
-                if (!$this->compileImport($rawPath, $out, true)&&(pathinfo($this->compileValue($rawPath),PATHINFO_EXTENSION)=='css')) { //surikat
-                    $out->lines[] = '@import ' . $this->compileValue($rawPath) . ';';
-                }
-                break;
-
-            case Type::T_IMPORT:
-                list(, $rawPath) = $child;
-
-                $rawPath = $this->reduce($rawPath);
-
-                //if (! $this->compileImport($rawPath, $out)) {
-                if (!$this->compileImport($rawPath, $out)&&(pathinfo($this->compileValue($rawPath),PATHINFO_EXTENSION)=='css')) { //surikat
-                    $out->lines[] = '@import ' . $this->compileValue($rawPath) . ';';
-                }
-                break;
-
-            case Type::T_DIRECTIVE:
-                $this->compileDirective($child[1]);
-                break;
-
-            case Type::T_AT_ROOT:
-                $this->compileAtRoot($child[1]);
-                break;
-
-            case Type::T_MEDIA:
-                $this->compileMedia($child[1]);
-                break;
-
-            case Type::T_BLOCK:
-                $this->compileBlock($child[1]);
-                break;
-
-            case Type::T_CHARSET:
-                if (! $this->charsetSeen) {
-                    $this->charsetSeen = true;
-
-                    $out->lines[] = '@charset ' . $this->compileValue($child[1]) . ';';
-                }
-                break;
-
-            case Type::T_ASSIGN:
-                list(, $name, $value) = $child;
-
-                if ($name[0] === Type::T_VARIABLE) {
-                    $flag = isset($child[3]) ? $child[3] : null;
-                    $isDefault = $flag === '!default';
-                    $isGlobal = $flag === '!global';
-
-                    if ($isGlobal) {
-                        $this->set($name[1], $this->reduce($value), false, $this->rootEnv);
-                        break;
-                    }
-
-                    $shouldSet = $isDefault &&
-                        (($result = $this->get($name[1], false)) === null
-                        || $result === self::$null);
-
-                    if (! $isDefault || $shouldSet) {
-                        $this->set($name[1], $this->reduce($value));
-                    }
-                    break;
-                }
-
-                $compiledName = $this->compileValue($name);
-
-                // handle shorthand syntax: size / line-height
-                if ($compiledName === 'font') {
-                    if ($value[0] === Type::T_EXPRESSION && $value[1] === '/') {
-                        $value = $this->expToString($value);
-                    } elseif ($value[0] === Type::T_LIST) {
-                        foreach ($value[2] as &$item) {
-                            if ($item[0] === Type::T_EXPRESSION && $item[1] === '/') {
-                                $item = $this->expToString($item);
-                            }
-                        }
-                    }
-                }
-
-                // if the value reduces to null from something else then
-                // the property should be discarded
-                if ($value[0] !== Type::T_NULL) {
-                    $value = $this->reduce($value);
-
-                    if ($value[0] === Type::T_NULL || $value === self::$nullString) {
-                        break;
-                    }
-                }
-
-                $compiledValue = $this->compileValue($value);
-
-                $out->lines[] = $this->formatter->property(
-                    $compiledName,
-                    $compiledValue
-                );
-                break;
-
-            case Type::T_COMMENT:
-                if ($out->type === Type::T_ROOT) {
-                    $this->compileComment($child);
-                    break;
-                }
-
-                $out->lines[] = $child[1];
-                break;
-
-            case Type::T_MIXIN:
-            case Type::T_FUNCTION:
-                list(, $block) = $child;
-
-                $this->set(self::$namespaces[$block->type] . $block->name, $block);
-                break;
-
-            case Type::T_EXTEND:
-                list(, $selectors) = $child;
-
-                foreach ($selectors as $sel) {
-                    $results = $this->evalSelectors([$sel]);
-
-                    foreach ($results as $result) {
-                        // only use the first one
-                        $result = current($result);
-
-                        $this->pushExtends($result, $out->selectors, $child);
-                    }
-                }
-                break;
-
-            case Type::T_IF:
-                list(, $if) = $child;
-
-                if ($this->isTruthy($this->reduce($if->cond, true))) {
-                    return $this->compileChildren($if->children, $out);
-                }
-
-                foreach ($if->cases as $case) {
-                    if ($case->type === Type::T_ELSE ||
-                        $case->type === Type::T_ELSEIF && $this->isTruthy($this->reduce($case->cond))
-                    ) {
-                        return $this->compileChildren($case->children, $out);
-                    }
-                }
-                break;
-
-            case Type::T_EACH:
-                list(, $each) = $child;
-
-                $list = $this->coerceList($this->reduce($each->list));
-
-                $this->pushEnv();
-
-                foreach ($list[2] as $item) {
-                    if (count($each->vars) === 1) {
-                        $this->set($each->vars[0], $item, true);
-                    } else {
-                        list(,, $values) = $this->coerceList($item);
-
-                        foreach ($each->vars as $i => $var) {
-                            $this->set($var, isset($values[$i]) ? $values[$i] : self::$null, true);
-                        }
-                    }
-
-                    $ret = $this->compileChildren($each->children, $out);
-
-                    if ($ret) {
-                        if ($ret[0] !== Type::T_CONTROL) {
-                            $this->popEnv();
-
-                            return $ret;
-                        }
-
-                        if ($ret[1]) {
-                            break;
-                        }
-                    }
-                }
-
-                $this->popEnv();
-                break;
-
-            case Type::T_WHILE:
-                list(, $while) = $child;
-
-                while ($this->isTruthy($this->reduce($while->cond, true))) {
-                    $ret = $this->compileChildren($while->children, $out);
-
-                    if ($ret) {
-                        if ($ret[0] !== Type::T_CONTROL) {
-                            return $ret;
-                        }
-
-                        if ($ret[1]) {
-                            break;
-                        }
-                    }
-                }
-                break;
-
-            case Type::T_FOR:
-                list(, $for) = $child;
-
-                $start = $this->reduce($for->start, true);
-                $start = $start[1];
-                $end = $this->reduce($for->end, true);
-                $end = $end[1];
-                $d = $start < $end ? 1 : -1;
-
-                while (true) {
-                    if ((! $for->until && $start - $d == $end) ||
-                        ($for->until && $start == $end)
-                    ) {
-                        break;
-                    }
-
-                    $this->set($for->var, new Number($start, ''));
-                    $start += $d;
-
-                    $ret = $this->compileChildren($for->children, $out);
-
-                    if ($ret) {
-                        if ($ret[0] !== Type::T_CONTROL) {
-                            return $ret;
-                        }
-
-                        if ($ret[1]) {
-                            break;
-                        }
-                    }
-                }
-                break;
-
-            case Type::T_BREAK:
-                return [Type::T_CONTROL, true];
-
-            case Type::T_CONTINUE:
-                return [Type::T_CONTROL, false];
-
-            case Type::T_RETURN:
-                return $this->reduce($child[1], true);
-
-            case Type::T_NESTED_PROPERTY:
-                list(, $prop) = $child;
-
-                $prefixed = [];
-                $prefix = $this->compileValue($prop->prefix) . '-';
-
-                foreach ($prop->children as $child) {
-                    switch ($child[0]) {
-                        case Type::T_ASSIGN:
-                            array_unshift($child[1][2], $prefix);
-                            break;
-
-                        case Type::T_NESTED_PROPERTY:
-                            array_unshift($child[1]->prefix[2], $prefix);
-                            break;
-                    }
-
-                    $prefixed[] = $child;
-                }
-
-                $this->compileChildrenNoReturn($prefixed, $out);
-                break;
-
-            case Type::T_INCLUDE:
-                // including a mixin
-                list(, $name, $argValues, $content) = $child;
-
-                $mixin = $this->get(self::$namespaces['mixin'] . $name, false);
-
-                if (! $mixin) {
-                    $this->throwError("Undefined mixin $name");
-                    break;
-                }
-
-                $callingScope = $this->getStoreEnv();
-
-                // push scope, apply args
-                $this->pushEnv();
-                $this->env->depth--;
-
-                if (isset($content)) {
-                    $content->scope = $callingScope;
-
-                    $this->setRaw(self::$namespaces['special'] . 'content', $content, $this->env);
-                }
-
-                if (isset($mixin->args)) {
-                    $this->applyArguments($mixin->args, $argValues);
-                }
-
-                $this->env->marker = 'mixin';
-
-                $this->compileChildrenNoReturn($mixin->children, $out);
-
-                $this->popEnv();
-                break;
-
-            case Type::T_MIXIN_CONTENT:
-                $content = $this->get(self::$namespaces['special'] . 'content', false, $this->getStoreEnv())
-                         ?: $this->get(self::$namespaces['special'] . 'content', false, $this->env);
-
-                if (! $content) {
-                    $this->throwError('Expected @content inside of mixin');
-                    break;
-                }
-
-                $storeEnv = $this->storeEnv;
-                $this->storeEnv = $content->scope;
-
-                $this->compileChildrenNoReturn($content->children, $out);
-
-                $this->storeEnv = $storeEnv;
-                break;
-
-            case Type::T_DEBUG:
-                list(, $value) = $child;
-
-                $line = $this->sourceLine;
-                $value = $this->compileValue($this->reduce($value, true));
-                fwrite($this->stderr, "Line $line DEBUG: $value\n");
-                break;
-
-            case Type::T_WARN:
-                list(, $value) = $child;
-
-                $line = $this->sourceLine;
-                $value = $this->compileValue($this->reduce($value, true));
-                echo "Line $line WARN: $value\n";
-                break;
-
-            case Type::T_ERROR:
-                list(, $value) = $child;
-
-                $line = $this->sourceLine;
-                $value = $this->compileValue($this->reduce($value, true));
-                $this->throwError("Line $line ERROR: $value\n");
-                break;
-
-            case Type::T_CONTROL:
-                $this->throwError('@break/@continue not permitted in this scope');
-                break;
-
-            default:
-                $this->throwError("unknown child type: $child[0]");
-        }
-    }
-
+    
+	
     // results the file path for an import url if it exists
     public function findImport($url)
     {
