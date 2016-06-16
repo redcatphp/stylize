@@ -240,7 +240,7 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 		});
 		if($this->dev&&strpos($__code,'//:eval_debug'))
 			exit(print($__code));
-		eval('?>'.$__code);
+		evalFree('?>'.$__code,$this);
 		$c = ob_get_clean();
 		set_error_handler($h);
 		return $c;
@@ -459,4 +459,8 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				throw new \RuntimeException('woff2_compress could not convert '.$base.' to Woff2 format.');
 		}
 	}
+}
+function evalFree(){
+	$stylize = func_get_arg(1);
+	return eval(func_get_arg(0));
 }
