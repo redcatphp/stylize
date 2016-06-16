@@ -26,9 +26,9 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 		$code = $this->mixinSphpSupport($code);
 		$code = $this->autoloadSphpSupport($code);
 		$code = $this->shortOpentagSupport($code);
+		$code = $this->evalFree($code);
 		$code = $this->autoloadScssSupport($code);
 		$code = $this->fontSupport($code);
-		$code = $this->evalFree($code);
 		return $code;
 	}
 	protected function mixinSphpSupport($code){
