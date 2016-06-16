@@ -8,6 +8,9 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
     const Scss_VERSION = 'v0.6.3@dev';
 	
 	protected $importedDotScss = [];
+	protected $includePaths = ['include'];
+	protected $extendPaths = ['extend'];
+	protected $fontPaths = ['font'];
 	
 	function parserFactory($path){
         $parser = new Parser($path, count($this->sourceNames), $this->encoding, $this);
@@ -128,8 +131,14 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 						}
 					}
 				}
-				if(!function_exists($func)&&($path = $this->findImport('include/'.$matches[1][$i])))
-					$this->importFile($path,$this->scope);
+				if(!function_exists($func)){
+					foreach($this->includePaths as $includePath){
+						if($path = $this->findImport($includePath.'/'.$matches[1][$i])){
+							$this->importFile($path,$this->scope);
+							break;
+						}
+					}
+				}
 				if(!function_exists($func))
 					$this->throwError('Call to undefined mixin at "@?include '.$fname.'( ..."');
 				$arg = "<?$func($arg);?>";
@@ -153,8 +162,12 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 			foreach(array_keys($matches[0]) as $i){
 				if(strpos($matches[1][$i],'#{')!==false)
 					continue;
-				if($this->findImport('include/'.$matches[1][$i]))
-					$code = "@import 'include/{$matches[1][$i]}';\r\n$code";
+				foreach($this->includePaths as $includePath){
+					if($this->findImport($includePath.'/'.$matches[1][$i])){
+						$code = "@import '$includePath/{$matches[1][$i]}';\r\n$code";
+						break;
+					}
+				}
 			}
 		}
 		preg_match_all('/@extend\\s+([^;]+)/s',$tmpCode,$matches);
@@ -163,8 +176,10 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				if(strpos($matches[1][$i],'#{')!==false)
 					continue;
 				$inc = ltrim(str_replace('%','-',$matches[1][$i]),'-');
-				if($this->findImport('extend/'.$inc))
-					$code = "@import 'extend/$inc';\r\n$code";
+				foreach($this->extendPaths as $extendPath){
+					if($this->findImport($extendPath.'/'.$inc))
+						$code = "@import '$extendPath/$inc';\r\n$code";
+				}
 			}
 		}
 		return $code;
@@ -198,8 +213,10 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				$x = explode(',',$font);
 				foreach($x as $f){
 					$this->autoGenerateFont($f);
-					if($this->findImport('font/'.$f))
-						$code = "@import 'font/$f';\r\n$code";
+					foreach($this->fontPaths as $fontPath){
+						if($this->findImport($fontPath.'/'.$f))
+							$code = "@import '$fontPath/$f';\r\n$code";
+					}
 				}
 				$tmpCode = substr($tmpCode,0,$pos=strpos($tmpCode,$matches[0][$i],$pos)).substr($tmpCode,$pos+1+strlen($matches[0][$i])); //strip
 			}
@@ -222,8 +239,10 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				$x = explode(',',$font);
 				foreach($x as $f){
 					$this->autoGenerateFont($f);
-					if($this->findImport('font/'.$f))
-						$code = "@import 'font/$f';\r\n$code";
+					foreach($this->fontPaths as $fontPath){
+						if($this->findImport($fontPath.'/'.$f))
+							$code = "@import '$fontPath/$f';\r\n$code";
+					}
 				}
 			}
 		}
@@ -245,6 +264,31 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 		set_error_handler($h);
 		return $c;
 	}
+	
+	function addIncludePath($path){
+        if (! in_array($path, $this->includePaths)) {
+            $this->includePaths[] = $path;
+        }
+    }
+    function setIncludePaths($path){
+        $this->includePaths = (array) $path;
+    }
+    function addExtendPath($path){
+        if (! in_array($path, $this->extendPaths)) {
+            $this->extendPaths[] = $path;
+        }
+    }
+    function setExtendPaths($path){
+        $this->extendPaths = (array) $path;
+    }
+    function addFontPath($path){
+        if (! in_array($path, $this->fontPaths)) {
+            $this->fontPaths[] = $path;
+        }
+    }
+    function setFontPaths($path){
+        $this->fontPaths = (array) $path;
+    }
 	
 	protected function importFile($path, $out)
     {
@@ -332,11 +376,15 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
     
     protected function autoGenerateFont($f){ //added by surikat
 		foreach($this->importPaths as $path){
-			if(
-				is_file($path.'/font/'.$f.'.scss')
-				||is_file($path.'/font/_'.$f.'.scss')
-				||is_file($path.'/font/'.$f.'.css')
-			) return;
+			foreach($this->fontPaths as $fontPath){
+				if(substr($fontPath,0,1)!='/')
+					$fontPath = $path.'/'.$fontPath;
+				if(
+					is_file($fontPath.'/'.$f.'.scss')
+					||is_file($fontPath.'/_'.$f.'.scss')
+					||is_file($fontPath.'/'.$f.'.css')
+				) return;
+			}
 		}
 		foreach($this->importPaths as $path){
 			$ttf = is_file($path.'/../font/'.$f.'.ttf');
