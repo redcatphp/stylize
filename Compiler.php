@@ -308,11 +308,12 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
             
             //addon by surikat
             $x = explode('/',dirname($path));
+            array_unshift($x,'');
 			$dotScss = [];
 			while(!empty($x)){
 				$dir = implode('/',$x);
 				array_pop($x);
-				$f = $dir.'/.scss';
+				$f = ltrim($dir.'/.scss','/');
 				if(is_file($f)&&!in_array($f,$this->importedDotScss)){
 					$this->importedDotScss[] = $f;
 					$dotScss[] = $f;
