@@ -329,12 +329,6 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 
             $tree = $this->importCache[$realPath];
         } else {
-            $code   = file_get_contents($path);
-            $parser = $this->parserFactory($path);
-            $tree   = $parser->parse($code);
-
-            $this->importCache[$realPath] = $tree;
-            
             //addon by surikat
             $x = explode('/',dirname($path));
             array_unshift($x,'');
@@ -354,6 +348,13 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 					$this->importFile($dscss,$out);
 				}
 			}
+			
+            $code   = file_get_contents($path);
+            $parser = $this->parserFactory($path);
+            $tree   = $parser->parse($code);
+
+            $this->importCache[$realPath] = $tree;
+            
 			
         }
 
