@@ -11,6 +11,10 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 	protected $includePaths = ['include'];
 	protected $extendPaths = ['extend'];
 	protected $fontPaths = ['font'];
+	protected $autoloadInclude = true;
+	protected $autoloadExtend = true;
+	protected $autoloadFont = true;
+	protected $autoGenerateFont = true;
 	
 	function parserFactory($path){
         $parser = new Parser($path, count($this->sourceNames), $this->encoding, $this);
@@ -27,11 +31,15 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 	}
 	function phpScssSupport($code){
 		$code = $this->mixinSphpSupport($code);
-		$code = $this->autoloadSphpSupport($code);
+		if($this->autoloadInclude){
+			$code = $this->autoloadSphpSupport($code);
+		}
 		$code = $this->shortOpentagSupport($code);
 		$code = $this->evalFree($code);
 		$code = $this->autoloadScssSupport($code);
-		$code = $this->fontSupport($code);
+		if($this->autoloadFont){
+			$code = $this->fontSupport($code);
+		}
 		return $code;
 	}
 	protected function mixinSphpSupport($code){
@@ -157,31 +165,38 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 		if(!empty($matches)&&!empty($matches[0]))
 			foreach(array_keys($matches[0]) as $i)
 				$tmpCode = substr($tmpCode,0,$pos=strpos($tmpCode,$matches[0][$i])).substr($tmpCode,$pos+1+strlen($matches[0][$i]));
-		preg_match_all('/@include\\s+([^\\(\\);]+)/s',$tmpCode,$matches);
-		if(!empty($matches)&&!empty($matches[0])){
-			foreach(array_keys($matches[0]) as $i){
-				if(strpos($matches[1][$i],'#{')!==false)
-					continue;
-				foreach($this->includePaths as $includePath){
-					if($this->findImport($includePath.'/'.$matches[1][$i])){
-						$code = "@import '$includePath/{$matches[1][$i]}';\r\n$code";
-						break;
+		
+		if($this->autoloadInclude){
+			preg_match_all('/@include\\s+([^\\(\\);]+)/s',$tmpCode,$matches);
+			if(!empty($matches)&&!empty($matches[0])){
+				foreach(array_keys($matches[0]) as $i){
+					if(strpos($matches[1][$i],'#{')!==false)
+						continue;
+					foreach($this->includePaths as $includePath){
+						if($this->findImport($includePath.'/'.$matches[1][$i])){
+							$code = "@import '$includePath/{$matches[1][$i]}';\r\n$code";
+							break;
+						}
 					}
 				}
 			}
 		}
-		preg_match_all('/@extend\\s+([^;]+)/s',$tmpCode,$matches);
-		if(!empty($matches)&&!empty($matches[0])){
-			foreach(array_keys($matches[0]) as $i){
-				if(strpos($matches[1][$i],'#{')!==false)
-					continue;
-				$inc = ltrim(str_replace('%','-',$matches[1][$i]),'-');
-				foreach($this->extendPaths as $extendPath){
-					if($this->findImport($extendPath.'/'.$inc))
-						$code = "@import '$extendPath/$inc';\r\n$code";
+		
+		if($this->autoloadExtend){
+			preg_match_all('/@extend\\s+([^;]+)/s',$tmpCode,$matches);
+			if(!empty($matches)&&!empty($matches[0])){
+				foreach(array_keys($matches[0]) as $i){
+					if(strpos($matches[1][$i],'#{')!==false)
+						continue;
+					$inc = ltrim(str_replace('%','-',$matches[1][$i]),'-');
+					foreach($this->extendPaths as $extendPath){
+						if($this->findImport($extendPath.'/'.$inc))
+							$code = "@import '$extendPath/$inc';\r\n$code";
+					}
 				}
 			}
 		}
+		
 		return $code;
 	}
 	protected function fontSupport($code){
@@ -212,7 +227,9 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
 				$font = str_replace(' ','-',strtolower(trim(str_replace([':','"',"'"],'',$matches[2][$i]))));
 				$x = explode(',',$font);
 				foreach($x as $f){
-					$this->autoGenerateFont($f);
+					if($this->autoGenerateFont){
+						$this->autoGenerateFont($f);
+					}
 					foreach($this->fontPaths as $fontPath){
 						if($this->findImport($fontPath.'/'.$f))
 							$code = "@import '$fontPath/$f';\r\n$code";
@@ -289,6 +306,18 @@ class Compiler extends \Leafo\ScssPhp\Compiler{
     function setFontPaths($path){
         $this->fontPaths = (array) $path;
     }
+    function setAutoGenerateFont($b){
+        $this->autoGenerateFont = (bool)$b;
+	}
+    function setAutoloadFont($b){
+		$this->autoloadFont = (bool)$b;
+	}
+	function setAutoloadInclude($b){
+		$this->autoloadInclude = (bool)$b;
+	}
+	function setAutoloadExtend($b){
+		$this->autoloadExtend = (bool)$b;
+	}
 	
 	protected function importFile($path, $out)
     {
