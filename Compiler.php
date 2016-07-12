@@ -4,8 +4,8 @@ use Leafo\ScssPhp\Formatter\OutputBlock;
 use Leafo\ScssPhp\Type;
 use Leafo\ScssPhp\Node\Number;
 class Compiler extends \Leafo\ScssPhp\Compiler{
-    const Stylize_VERSION = 'v2';
-    const Scss_VERSION = 'v0.6.3@dev';
+    const STYLIZE_VERSION = 'v2';
+    const SCSS_VERSION = 'v0.6.3@dev';
 	
 	protected $importedDotScss = [];
 	protected $includePaths = ['include'];

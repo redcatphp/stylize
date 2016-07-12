@@ -101,8 +101,8 @@ class Server{
 			$css = $this->compiler->compile(file_get_contents($in), $in);
 		}
 		$elapsed = round((microtime(true) - $start), 4);
-		$v = Compiler::Scss_VERSION;
-		$v2 = Compiler::Stylize_VERSION;
+		$v = Compiler::SCSS_VERSION;
+		$v2 = Compiler::STYLIZE_VERSION;
 		$t = @date('r');
 		$css = "/* compiled by Stylize $v2 ( based on Leafo/ScssPhp $v - Sass 3.x implementation in PHP ) on $t (${elapsed}s) */\n\n" . $css;
 		if(!is_dir($this->cacheDir))
